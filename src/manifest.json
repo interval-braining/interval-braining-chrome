@@ -1,0 +1,35 @@
+{
+  "background": {
+    "scripts": [
+      "/js/background.js"
+    ]
+  },
+  "browser_action": {
+    "default_title": "Interval Braining",
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    }
+  },
+  "description": "Flashcards.",
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "manifest_version": 2,
+  "name": "Interval Braining",
+  "oauth2": {
+    "client_id": "",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  },
+  "permissions": [
+    "identity",
+    "identity.email",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "version": "0.1.0"
+}
