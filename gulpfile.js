@@ -2,20 +2,24 @@ var babelify = require("babelify"),
   browserify = require("browserify"),
   cleanhtml = require("gulp-cleanhtml"),
   concat = require("gulp-concat"),
+  data = require("gulp-data"),
   derequire = require("gulp-derequire"),
   del = require("del"),
   eslint = require("gulp-eslint"),
+  extend = require("util")._extend,
   globby = require("globby"),
   gulp = require("gulp"),
   gutil = require("gulp-util"),
   karma = require("karma"),
   merge = require("merge-stream"),
   minifycss = require("gulp-minify-css"),
+  nunjucksRender = require("gulp-nunjucks-render"),
   rename = require("gulp-rename"),
   source = require("vinyl-source-stream"),
   uglify = require("gulp-uglify"),
   zip = require("gulp-zip");
 
+var env = process.env.ENV || "development";
 var srcDir = "src/";
 
 var config = {
@@ -24,8 +28,16 @@ var config = {
   srcDir: srcDir
 };
 
+function envData() {
+  var defaultData = require("./config/env/default.js"),
+      data = require("./config/env/" + env + ".js"),
+      envSecret = require("./config/env/" + env + ".secret.js"),
+      compiledData = extend(extend(defaultData, data), envSecret);
+  return compiledData;
+}
+
 // Build all the things!
-gulp.task("build", ["build:copy", "build:css", "build:html", "build:js"]);
+gulp.task("build", ["build:copy", "build:css", "build:html", "build:js", "build:manifest"]);
 
 // Clean build directory
 gulp.task("build:clean", function() {
@@ -34,10 +46,8 @@ gulp.task("build:clean", function() {
 
 // Copy files that don't require any build process
 gulp.task("build:copy", ["build:clean"], function() {
-  gulp.src(["src/images/*"]).
-    pipe(gulp.dest("build/images"));
-  return gulp.src("src/manifest.json").
-    pipe(gulp.dest("build"));
+  return gulp.src(["src/images/*"])
+    .pipe(gulp.dest("build/images"));
 });
 
 // Build CSS
@@ -112,6 +122,15 @@ gulp.task("build:js", ["lint", "build:clean"], function(done) {
 
   return merge.apply(this, bundles).
     on("alldone", done);
+});
+
+// Render manifest
+gulp.task("build:manifest", ["build:clean"], function() {
+  return gulp.src(config.srcDir + "manifest.json.njk")
+    .pipe(data(envData))
+    .pipe(nunjucksRender({}))
+    .pipe(rename("manifest.json"))
+    .pipe(gulp.dest(config.buildDir));
 });
 
 // Lint JS
